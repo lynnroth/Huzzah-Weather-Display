@@ -1,5 +1,10 @@
 Huzzah Weather Display
 ================
+ Modified to use a .NET/NancyFX api instead of PHP.
+ Renamed variables in file to be more consistent.
+ 
+
+
 
 For a tutorial and more information see https://learn.adafruit.com/huzzah-weather-display
  
