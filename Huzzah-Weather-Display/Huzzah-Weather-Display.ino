@@ -38,15 +38,16 @@ See more at http://blog.squix.ch
 
 #define I2C 0x3D
 
-#define WIFISSID "YOUR_WIFI_SSID"
-#define PASSWORD "YOUR_WIFI_PASSWORD"
+#define WIFISSID "PENGUIN"
+#define PASSWORD "penguinpass"
 
-#define FORECASTAPIKEY "YOUR_FORECAST_API_KEY"
+#define FORECASTAPIKEY "fa6015dea8626f8bb72e494d3631b3dd"
 
 // New York City
-#define LATITUDE 40.71
-#define LONGITUDE -74
-
+#define LATITUDE 41.529288
+#define LONGITUDE -84.223546
+#define HTTPPORT 80
+#define DOMAINNAME weather.penguin.nu
 
 
 // Initialize the oled display for address 0x3c

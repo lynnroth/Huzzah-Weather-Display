@@ -29,20 +29,20 @@ See more at http://blog.squix.ch
 void WeatherClient::updateWeatherData(String apiKey, double lat, double lon) {
   WiFiClient client;
   const int httpPort = 80;
-  if (!client.connect("YOURDOMAINNAME", httpPort)) {
+  if (!client.connect("DOMAINNAME", httpPort)) {
     Serial.println("connection failed");
     return;
   }
   
   // We now create a URI for the request
-  String url = "http://YOURDOMAINNAME/weather.php?apiKey=" + apiKey + "&lat=" + String(lat) + "&lon=" + String(lon) + "&units=" + myUnits;
+  String url = "http://DOMAINNAME:HTTPPORT/weather/" + apiKey + "/" + String(lat) + "," + String(lon) + "&units=" + myUnits;
   
   Serial.print("Requesting URL: ");
   Serial.println(url);
   
   // This will send the request to the server
   client.print(String("GET ") + url + " HTTP/1.1\r\n" +
-               "Host: YOURDOMAINNAME\r\n" + 
+               "Host: DOMAINNAME\r\n" + 
                "Connection: close\r\n\r\n");
   while(!client.available()) {
     
@@ -80,8 +80,16 @@ void WeatherClient::updateWeatherData(String apiKey, double lat, double lon) {
          minTempTomorrow = value.toInt();
         } else if (key =="SUMMARY_TODAY") {
          summaryTomorrow = value;
-        } 
-
+        } else if (key =="MIN_TEMP_TOMORROW") {
+         minTempTomorrow = value.toInt();
+		} 
+		else if (key == "ALERT1") {
+			alert1 = value;
+		}
+		else if (key == "ALERT2") {
+			alert2 = value;
+		}
+        
     }
     
   }
@@ -112,6 +120,12 @@ String WeatherClient::getValue(String line) {
 }
 
 
+String WeatherClient::getAlert1(void) {
+	return alert1;
+}
+String WeatherClient::getAlert2(void) {
+	return alert2;
+}
 int WeatherClient::getCurrentTemp(void) {
   return currentTemp;
 }

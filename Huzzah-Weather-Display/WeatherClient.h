@@ -27,6 +27,8 @@ See more at http://blog.squix.ch
 
 class WeatherClient {
   private:
+	  String alert1;
+	  String alert2;
     int currentTemp;
     int currentHumidity;
     String currentIcon;
@@ -49,7 +51,9 @@ class WeatherClient {
   public:
     void updateWeatherData(String apiKey, double lat, double lon); 
     void setUnits(String units);
-    int getCurrentTemp(void);
+	String getAlert1(void);
+	String getAlert2(void);
+	int getCurrentTemp(void);
     int getCurrentHumidity(void);
     String getCurrentIcon(void);
     String getCurrentSummary(void);
