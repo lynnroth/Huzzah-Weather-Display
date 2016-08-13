@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>ForecastIOPortable</id>
+    <version>2.2</version>
+    <authors>Jerome Cheng</authors>
+    <owners>Jerome Cheng</owners>
+    <licenseUrl>http://opensource.org/licenses/MIT</licenseUrl>
+    <projectUrl>https://github.com/jcheng31/ForecastPCL</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>A portable class library for the Forecast.io API. Supports .NET 4.5, Silverlight 5, Windows 8/8.1, Windows Phone 8 and 8.1, and Universal Windows Apps.</description>
+    <releaseNotes>
+        * Added support for Universal Windows Apps.
+        * Added support for Arabic, Slovak, Swedish, Turkish, and Chinese.
+    </releaseNotes>
+    <copyright />
+    <tags>Forecast.IO Forecast Weather</tags>
+  </metadata>
+</package>

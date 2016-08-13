@@ -38,17 +38,17 @@ See more at http://blog.squix.ch
 
 #define I2C 0x3D
 
-#define WIFISSID "PENGUIN"
+#define WIFISSID "penguin"
 #define PASSWORD "penguinpass"
 
 #define FORECASTAPIKEY "fa6015dea8626f8bb72e494d3631b3dd"
 
-// New York City
-#define LATITUDE 41.529288
-#define LONGITUDE -84.223546
-#define HTTPPORT 80
-#define DOMAINNAME weather.penguin.nu
+// Pettisville, Ohio
+#define LATITUDE 41.53
+#define LONGITUDE -84.22
 
+const char* weatherhost = "weather.penguin.nu";
+const int weatherhttpPort = 80;
 
 // Initialize the oled display for address 0x3c
 // 0x3D is the adafruit address....
@@ -59,10 +59,10 @@ Ticker ticker;
 
 // this array keeps function pointers to all frames
 // frames are the single views that slide from right to left
-void (*frameCallbacks[3])(int x, int y) = {drawFrame1, drawFrame2, drawFrame3};
+void (*frameCallbacks[4])(int x, int y) = {drawFrame1, drawFrame2, drawFrame5, drawFrame3};
 
 // how many frames are there?
-int frameCount = 3;
+int frameCount = 4;
 // on frame is currently displayed
 int currentFrame = 0;
 
@@ -83,37 +83,46 @@ double longitude = LONGITUDE;
 // flag changed in the ticker function every 10 minutes
 bool readyForWeatherUpdate = true;
 
+int mode = 0;
+
 void setup() {
   delay(500);
   //ESP.wdtDisable();
-
-
+  
+  weather.setServer(weatherhost);
+  weather.setPort(weatherhttpPort);
 
   // initialize display
   display.init();
+  
   display.flipScreenVertically();
-  // set the drawing functions
-  display.setFrameCallbacks(3, frameCallbacks);
-  // how many ticks does a slide of frame take?
-  display.setFrameTransitionTicks(10);
 
-  display.clear();
-  display.display();
+  setScrollingDisplay();
 
   Serial.begin(115200);
   delay(500);
+
+
+  Serial.print("Flash Size: "); Serial.println(ESP.getFlashChipRealSize());
+  
 
   Serial.println();
   Serial.println();
   // We start by connecting to a WiFi network
   Serial.print("Connecting to ");
   Serial.println(ssid);
+  //Serial.print(" - ");
+  //Serial.println(pass);
+  
+  searchForWifi();
+
   WiFi.begin(ssid, pass);
 
   int counter = 0;
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
     Serial.print(".");
+    pinMode(4, INPUT);
 
     display.clear();
     display.drawXbm(34, 10, 60, 36, WiFi_Logo_bits);
@@ -128,14 +137,54 @@ void setup() {
   Serial.println("");
 
   Serial.println("WiFi connected");
-  Serial.println("IP address: ");
+  Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
 
   // update the weather information every 10 mintues only
   // forecast.io only allows 1000 calls per day
-  ticker.attach(60 * 10, setReadyForWeatherUpdate);
-
+  //ticker.attach(60 * 10, setReadyForWeatherUpdate);
+  ticker.attach(60 * 5, setReadyForWeatherUpdate);
   //ESP.wdtEnable();
+}
+
+void searchForWifi()
+{
+  int numNetworks = WiFi.scanNetworks();
+  for (int thisNet = 0; thisNet < numNetworks; thisNet++) {
+    Serial.print(thisNet);
+    Serial.print(") ");
+    Serial.print(WiFi.SSID(thisNet));
+    Serial.print("\tChannel: ");
+    Serial.print(WiFi.channel(thisNet));
+    Serial.print("\tSignal: ");
+    Serial.print(WiFi.RSSI(thisNet));
+    Serial.print(" dBm");
+    Serial.print("\tEncryption: ");
+    printEncryptionType(WiFi.encryptionType(thisNet));
+  }
+}
+
+
+  void printEncryptionType(int thisType) {
+    // read the encryption type and print out the name:
+    switch (thisType) {
+    case ENC_TYPE_WEP:
+      Serial.println("WEP");
+      break;
+    case ENC_TYPE_TKIP:
+      Serial.println("WPA");
+      break;
+    case ENC_TYPE_CCMP:
+      Serial.println("WPA2");
+      break;
+    case ENC_TYPE_NONE:
+      Serial.println("None");
+      break;
+    case ENC_TYPE_AUTO:
+      Serial.println("Auto");
+      break;
+    }
+  return;
 }
 
 void loop() {
@@ -144,17 +193,46 @@ void loop() {
     readyForWeatherUpdate = false;
     weather.updateWeatherData(forecastApiKey, latitude, longitude);
   }
-
-  display.clear();
-  display.nextFrameTick();
-  display.display();
+  int a = digitalRead(4);
+  
+  
+  //Serial.println(a);
+  
+  if (mode == 0)
+  {
+    display.clear();
+    display.nextFrameTick();
+    display.display();
+  }
+  else if (mode == 1)
+  {
+    display.clear();
+    drawFrame4(0, 0);
+    display.display();
+  }
+  
 }
 
 void setReadyForWeatherUpdate() {
   readyForWeatherUpdate = true;
 }
 
+void setScrollingDisplay()
+{
+  mode = 0;
+  // set the drawing functions
+  display.setFrameCallbacks(4, frameCallbacks);
+  // how many ticks does a slide of frame take?
+  display.setFrameTransitionTicks(10);
+
+  display.clear();
+  display.display();
+}
+
+
 void drawFrame1(int x, int y) {
+  //Serial.println("Draw Frame 1"); 
+  
   display.setFontScale2x2(false);
   display.drawString(65 + x, 8 + y, "Now");
   display.drawXbm(x + 7, y + 7, 50, 50, getIconFromString(weather.getCurrentIcon()));
@@ -166,33 +244,9 @@ void drawFrame1(int x, int y) {
 
 }
 
-const char* getIconFromString(String icon) {
-  //"clear-day, clear-night, rain, snow, sleet, wind, fog, cloudy, partly-cloudy-day, or partly-cloudy-night"
-  if (icon == "clear-day") {
-    return clear_day_bits;
-  } else if (icon == "clear-night") {
-    return clear_night_bits;
-  } else if (icon == "rain") {
-    return rain_bits;
-  } else if (icon == "snow") {
-    return snow_bits;
-  } else if (icon == "sleet") {
-    return sleet_bits;
-  } else if (icon == "wind") {
-    return wind_bits;
-  } else if (icon == "fog") {
-    return fog_bits;
-  } else if (icon == "cloudy") {
-    return cloudy_bits;
-  } else if (icon == "partly-cloudy-day") {
-    return partly_cloudy_day_bits;
-  } else if (icon == "partly-cloudy-night") {
-    return partly_cloudy_night_bits;
-  }
-  return cloudy_bits;
-}
-
 void drawFrame2(int x, int y) {
+  //Serial.println("Draw Frame 2"); 
+  
   display.setFontScale2x2(false);
   display.drawString(65 + x, 0 + y, "Today");
   display.drawXbm(x, y, 60, 60, xbmtemp);
@@ -204,11 +258,55 @@ void drawFrame2(int x, int y) {
 }
 
 void drawFrame3(int x, int y) {
+ 
   display.drawXbm(x + 7, y + 7, 50, 50, getIconFromString(weather.getIconTomorrow()));
   display.setFontScale2x2(false);
   display.drawString(65 + x, 7 + y, "Tomorrow");
   display.setFontScale2x2(true);
   display.drawString(64 + x, 20 + y, String(weather.getMaxTempTomorrow()) + "F");
+}
+
+//Upcoming summary
+void drawFrame4(int x, int y) {
+ 
+  display.setFontScale2x2(false);
+  String text = weather.getHourlySummary();
+  
+  display.drawString(2 + x, 2 + y, text);
+  Serial.println("---------------------");
+  Serial.println(text);
+  Serial.println("---------------------");
+  Serial.println("012345678901234"); 
+  displayLines(2 + x, 2 + y, 0, text);
+  Serial.println("---------------------");
+
+}
+const int linespace = 9;
+
+void displayLines(int x, int y, int line, String text)
+{
+  int firstTab = text.indexOf(9);
+  if (firstTab == -1)
+  {
+    display.drawString(x, y + line * linespace, text + "       ");
+    Serial.println(text);
+    return;
+  }
+
+  displayLines(x, y, line, text.substring(0, firstTab));
+  displayLines(x, y, line + 1, text.substring(firstTab + 1));
+}
+
+
+//Next Precipitation
+void drawFrame5(int x, int y) {
+ 
+  display.setFontScale2x2(true);
+  display.drawString(2 + x, 5 + y, String(weather.getNextPrecipType()));
+  display.setFontScale2x2(false);
+  display.drawString(2 + x, 20+ y, "at");
+  display.drawString(2 + x, 30 + y, String(weather.getNextPrecipTime()));
+  
 }
 
 void drawSpinner(int count, int active) {
@@ -222,4 +320,41 @@ void drawSpinner(int count, int active) {
     display.drawXbm(64 - (12 * count / 2) + 12 * i, 56, 8, 8, xbm);
   }
 }
+
+
+const char* getIconFromString(String icon) {
+  //"clear-day, clear-night, rain, snow, sleet, wind, fog, cloudy, partly-cloudy-day, or partly-cloudy-night"
+  if (icon == "clear-day") {
+    return clear_day_bits;
+  }
+  else if (icon == "clear-night") {
+    return clear_night_bits;
+  }
+  else if (icon == "rain") {
+    return rain_bits;
+  }
+  else if (icon == "snow") {
+    return snow_bits;
+  }
+  else if (icon == "sleet") {
+    return sleet_bits;
+  }
+  else if (icon == "wind") {
+    return wind_bits;
+  }
+  else if (icon == "fog") {
+    return fog_bits;
+  }
+  else if (icon == "cloudy") {
+    return cloudy_bits;
+  }
+  else if (icon == "partly-cloudy-day") {
+    return partly_cloudy_day_bits;
+  }
+  else if (icon == "partly-cloudy-night") {
+    return partly_cloudy_night_bits;
+  }
+  return cloudy_bits;
+}
+
 

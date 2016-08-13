@@ -26,45 +26,61 @@ See more at http://blog.squix.ch
 #include <Arduino.h>
 
 class WeatherClient {
-  private:
-	  String alert1;
-	  String alert2;
-    int currentTemp;
-    int currentHumidity;
-    String currentIcon;
-    String currentSummary;
-    String iconToday;
-    int maxTempToday;
-    int minTempToday;
-    String summaryToday;
-    int maxTempTomorrow;
-    int minTempTomorrow;
-    String iconTomorrow;
-    String summaryTomorrow;
-    String apiKey;
-    String myUnits = "us";
-    String myLanguage;
-    
-    String getValue(String line);
-    String getKey(String line);
-  
-  public:
-    void updateWeatherData(String apiKey, double lat, double lon); 
-    void setUnits(String units);
+private:
+	char const* myServer;
+	uint16_t myPort;
+	String alert1;
+	String alert2;
+	int currentTemp;
+	int currentHumidity;
+	String currentIcon;
+	String currentSummary;
+	String iconToday;
+	int maxTempToday;
+	int minTempToday;
+	String summaryToday;
+  String hourlySummary;
+
+	int maxTempTomorrow;
+	int minTempTomorrow;
+
+  String nextPrecipTime;
+  String nextPrecipType;
+  double nextPrecipIntensity;
+  double nextPrecipProbability;
+	String iconTomorrow;
+	String summaryTomorrow;
+	String apiKey;
+	String myUnits = "us";
+	String myLanguage;
+
+	String getValue(String line);
+	String getKey(String line);
+
+public:
+	void updateWeatherData(String apiKey, double lat, double lon);
+	void setUnits(String units);
+	void setServer(char const* server);
+	void setPort(uint16_t port);
+
 	String getAlert1(void);
 	String getAlert2(void);
 	int getCurrentTemp(void);
-    int getCurrentHumidity(void);
-    String getCurrentIcon(void);
-    String getCurrentSummary(void);
-    String getIconToday(void);
-    int getMaxTempToday(void);
-    int getMinTempToday(void);
-    String getSummaryToday(void);
-    int getMaxTempTomorrow(void);
-    int getMinTempTomorrow(void);
-    String getIconTomorrow(void);
-    String getSummaryTomorrow(void);
-    
-  
+	int getCurrentHumidity(void);
+	String getCurrentIcon(void);
+	String getCurrentSummary(void);
+	String getIconToday(void);
+	int getMaxTempToday(void);
+	int getMinTempToday(void);
+	String getSummaryToday(void);
+	int getMaxTempTomorrow(void);
+	int getMinTempTomorrow(void);
+	String getIconTomorrow(void);
+	String getSummaryTomorrow(void);
+
+  String getHourlySummary(void);
+  String getNextPrecipTime(void);
+  String getNextPrecipType(void);
+  double getNextPrecipIntensity(void);
+  double getNextPrecipProbability(void);
 };
